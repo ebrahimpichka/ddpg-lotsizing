@@ -17,8 +17,7 @@ class DDPGAgent(object):
         self.batch_size = batch_size
         self.critic_lr = critic_lr
         self.actor_lr = actor_lr
-        self.alpha = alpha
-        self.beta = beta
+
 
         ### Actor Networks ###
         self.actor = Actor(num_states, num_actions, hidden1_dims, hidden2_dims, name='Actor')
@@ -51,7 +50,7 @@ class DDPGAgent(object):
         if self.memory.mem_cntr < self.batch_size:
             return()
         state, action, reward, new_state, terminal = \
-            self.memory.sample_buffer(self.batch_size)
+            self.memory.sample(self.batch_size)
 
         reward = T.tensor(reward, dtype=T.float).to(self.critic.device)
         terminal = T.tensor(terminal).to(self.critic.device)
@@ -68,14 +67,16 @@ class DDPGAgent(object):
         critic_value = self.critic.forward(state, action)
 
         ### target with for loop ###
-        # target = []
-        # for j in range(self.batch_size):
-        #     target.append(reward[j] + self.gamma*target_critic_value[j]*terminal[j])
+        target = []
+        for j in range(self.batch_size):
+            target.append(reward[j] + self.gamma*target_critic_value[j]*terminal[j])
         
         ### target vectorized ###
-        target = reward + self.gamma*target_critic_value*terminal
+        # target = reward + self.gamma*target_critic_value*terminal
+
+        
         target = T.tensor(target).to(self.critic.device)
-        # target = target.view(self.batch_size, 1)
+        target = target.view(self.batch_size, 1)
 
 
         ### Critic update ###
@@ -162,11 +163,11 @@ class OUActionNoise(object):
 
 
 class ReplayBuffer(object):
-    def __init__(self, max_size, input_shape, num_actions):
+    def __init__(self, max_size, num_states, num_actions):
         self.mem_size = max_size
         self.mem_cntr = 0
-        self.state_memory = np.zeros((self.mem_size, *input_shape))
-        self.new_state_memory = np.zeros((self.mem_size, *input_shape))
+        self.state_memory = np.zeros((self.mem_size, num_states))
+        self.new_state_memory = np.zeros((self.mem_size, num_states))
         self.action_memory = np.zeros((self.mem_size, num_actions))
         self.reward_memory = np.zeros(self.mem_size)
         self.terminal_memory = np.zeros(self.mem_size, dtype=np.float32)

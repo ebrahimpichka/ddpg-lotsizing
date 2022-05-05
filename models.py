@@ -79,7 +79,7 @@ class Critic(nn.Module):
             os.makedirs(chkpt_dir)
         self.checkpoint_file = os.path.join(chkpt_dir, name+'critic_ddpg')
 
-        self.fc1 = nn.Linear(nb_states, hidden1_dims)
+        self.fc1 = nn.Linear(num_states, hidden1_dims)
         self.bn1 = nn.LayerNorm(hidden1_dims)
         self.fc2 = nn.Linear(hidden1_dims + num_actions, hidden2_dims)
         self.bn2 = nn.LayerNorm(hidden2_dims)

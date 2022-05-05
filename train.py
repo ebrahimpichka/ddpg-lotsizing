@@ -1,8 +1,9 @@
 import numpy as np
+import random
 from ddpg_agent import DDPGAgent
 from environment import LotSizingEnv
 
-def train(num_iterations, agent, validate_steps, scenarios, save_model=True, save_often=25):
+def train(num_iterations, agent, scenarios, save_model=True, save_often=25):
 
     score_history = []
     reward_log_history = []
@@ -39,8 +40,8 @@ def train(num_iterations, agent, validate_steps, scenarios, save_model=True, sav
         if save_model and  (iteration % save_often == 0):
            agent.save_models()
 
-        print('episode ', iteration, 'score %.2f' % score,
-            'last 10 episodes avg score %.3f' % np.mean(score_history[-10:]))
+        print('episode ', iteration, 'score \t%.2f' % score,
+            '\nlast 10 episodes avg score\t %.3f\n========' % np.mean(score_history[-10:]))
 
     return(agent, score_history, reward_log_history, action_log_history)
 
@@ -54,9 +55,9 @@ if __name__ == "__main__":
     
     scenarios = [
         (
-            # Tuple[total_timesteps, demands, capacities, holding_cost, setup_cost, starting_inventory]
-            # (int, list, list, int, int, int)
-            (10, [100,125,138,169,147,74,98,112,136,98], [100, 100, 100, 100, 100, 100, 100, 100, 100, 100], 50, 10, 150)
+            # Tuple[total_timesteps, demands, capacities, holding_cost, setup_cost, starting_inventory, shortage_penalty]
+            # (int, list, list, float, float, float, float)
+            (10, [100,125,138,169,147,74,98,112,136,98], [100, 100, 100, 100, 100, 100, 100, 100, 100, 100], 50, 10, 150, 15)
             # ... real historical data or simulated data
         )
     ]
@@ -65,8 +66,9 @@ if __name__ == "__main__":
     if LOAD_MODEL:
         agent.load_models()
 
-    ### TRAINING ###  
+    ### TRAINING ###
+    num_iterations = 100
     agent, score_history, reward_log_history, action_log_history = \
-        train(num_iterations, agent, validate_steps, scenarios)
+        train(num_iterations, agent, scenarios)
     
     agent.save_models()

@@ -29,9 +29,15 @@ class LotSizingEnv:
     def step(self, action):
         
         reward = self._act(action)
-        self._timestep += 1
-        new_observation = self._get_obs()
-        done = self.is_done(new_observation)
+        done = True if (self._timestep+1 == self.total_timesteps) else False
+        if not done:
+            new_observation = self._get_obs()
+            self._timestep += 1
+        else:
+            self.reset()
+            new_observation = self._get_obs()
+        # self.is_done(new_observation)
+        
         new_state = self._obs_to_state(new_observation)
         return(new_state, reward, done)
 
@@ -59,11 +65,11 @@ class LotSizingEnv:
 
         return(reward)
 
-    def is_done(self, obs: dict):
-        if obs.get("timestep") == self.total_timesteps:
-            return(True)
-        else:
-            return(False)
+    # def is_done(self, obs: dict):
+    #     if obs.get("timestep") == self.total_timesteps:
+    #         return(True)
+    #     else:
+    #         return(False)
 
     def reset(self):
         self._timestep = 0
@@ -78,7 +84,7 @@ class LotSizingEnv:
     
     def _obs_to_state(self, observation: dict):
         state = []
-        for el in observation:
+        for el in observation.values():
             state += el
         return(np.array(state))
 
